@@ -33,6 +33,7 @@ import {
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 
 import { history } from "./history";
+import { PhillyWidgetProvider } from "./providers/PhillyWidgetProvider";
 
 const App: React.FC = () => {
   const [iModelId, setIModelId] = useState(process.env.IMJS_IMODEL_ID);
@@ -171,6 +172,7 @@ const App: React.FC = () => {
             enableCopyingPropertyText: true,
           }),
           new MeasureToolsUiItemsProvider(),
+          new PhillyWidgetProvider()
         ]}
       />
     </div>
