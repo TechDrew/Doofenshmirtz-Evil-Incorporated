@@ -6,6 +6,7 @@ import { Button, ToggleSwitch } from "@itwin/itwinui-react";
 import { ColorDef, ContextRealityModelProps } from "@itwin/core-common";
 import { ColorPickerButton } from "@itwin/imodel-components-react";
 import { Id64Array } from "@itwin/core-bentley";
+import { BuildingGroup, BuildingGroupListItem } from "./BuildingGroupComponent";
 
 export const MyFirstWidget: React.FC = () => {
   const viewport = useActiveViewport();
@@ -16,7 +17,7 @@ export const MyFirstWidget: React.FC = () => {
   const [listOfThings, setListOfThings] = React.useState<string[]>([]);
   const [classifier, setClassifier] = React.useState<string>("");
   const [hiliteColor, setHiliteColor] = React.useState<ColorDef>(ColorDef.black);
-  const [selectedbuildings, setSelectedBuildings] = React.useState<Id64Array>([])
+  const [selectedbuildings, setSelectedBuildings] = React.useState<BuildingGroup[]>([])
 
   useEffect(() => {
     const asyncInitialize = async () => {
@@ -60,34 +61,34 @@ const somethingSilly = async () => {
   setListOfThings([...listOfThings, "Parry's Mind: Why is this such a shocker still???"])
 }
 
-const savebuilding = async () => {
-  if (viewport?.iModel.selectionSet.isActive) { // If something is selected
-    const newSelectedBuildings = [...selectedbuildings, ...viewport.iModel.selectionSet.elements]; // Merge the current saved selection with what is currently selected
-    setSelectedBuildings(newSelectedBuildings);  // Save the new selection to the sate
-  }
-}
-
-const saveSelectedBuildings = async () => {
-  if (viewport) {
-    viewport.iModel.selectionSet.emptyAll();
-    viewport.iModel.selectionSet.add(selectedbuildings);
-  }
-}
-
 const TheFuture = async () => {
-  viewport?.zoomToElements(selectedbuildings);
+  viewport?.zoomToElements(viewport?.iModel.selectionSet.elements);
 }
 const thingList = listOfThings.map((thing: string) => <li>{thing}</li>);
+
+  function addNewGroup(): void {
+    const newBuildingGroup = {name: "new", buildings:[]};
+    setSelectedBuildings([...selectedbuildings, newBuildingGroup])
+  }
+  const handleItemChange = (oldItem: BuildingGroup, newItem: BuildingGroup) => {
+    const newList = selectedbuildings.map((item) => item.name === oldItem.name ? newItem : item);
+    setSelectedBuildings(newList);
+  }
+
+  const buildingGroups: JSX.Element[] = []
+  selectedbuildings.forEach( (value: BuildingGroup) => {
+    buildingGroups.push(<BuildingGroupListItem item={value} handleItemChange={handleItemChange} />);
+  });
 
   return (
     <div>
       This is my first widget
       <ToggleSwitch onChange={togglePhillyReality} label='Philly Reality Data' />
       <ColorPickerButton initialColor={hiliteColor} onColorPick={onColorChange} />
-      <Button onClick={savebuilding}>Save Selected Building</Button>
+      <Button onClick={addNewGroup}>Add New Group</Button>
       <Button onClick={somethingSilly}>Doofenshmirtz seeing Perry put on his hat</Button>
-      <Button onClick={saveSelectedBuildings}>Select Saved Buildings</Button>
       <Button onClick={TheFuture}>Kenbunshoku Haki</Button>
+      {buildingGroups}
       <ul>
         {thingList}
       </ul>
